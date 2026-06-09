@@ -1,0 +1,15 @@
+[Unit]
+Description=Land Your Web Paperclip Home Control Plane
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/paperclip
+ExecStart=/usr/bin/env bash -lc 'corepack enable && pnpm dev:once'
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=development
+
+[Install]
+WantedBy=default.target
