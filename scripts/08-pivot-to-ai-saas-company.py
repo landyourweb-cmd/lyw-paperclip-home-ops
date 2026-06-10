@@ -120,7 +120,7 @@ def configure_zero_budget() -> None:
         agent = req("PATCH", f"/agents/{agent_id}", json={
             "budgetMonthlyCents": ZERO_BUDGET,
             "adapterType": "codex_local",
-            "adapterConfig": {},
+            "adapterConfig": {"model": "gpt-5.5"},
             "replaceAdapterConfig": True,
             "status": "idle",
         })
