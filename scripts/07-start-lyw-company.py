@@ -108,9 +108,23 @@ def main() -> None:
     company = req("PATCH", f"/companies/{COMPANY_ID}", json={"budgetMonthlyCents": COMPANY_BUDGET_CENTS})
     print(f"Company budget cap: ${company.get('budgetMonthlyCents', 0) / 100:.2f}/month")
 
+    # Codex is the currently verified working execution adapter on this machine.
+    # Hermes currently fails here with HTTP 402 insufficient balance, while Codex
+    # has native ChatGPT auth and passes Paperclip's adapter probe.
     for agent in (overlord, mercury):
-        patched = req("PATCH", f"/agents/{agent['id']}", json={"budgetMonthlyCents": AGENT_BUDGET_CENTS})
-        print(f"Agent budget cap: {patched['name']} = ${patched.get('budgetMonthlyCents', 0) / 100:.2f}/month")
+        patched = req("PATCH", f"/agents/{agent['id']}", json={
+            "adapterType": "codex_local",
+            "adapterConfig": {},
+            "replaceAdapterConfig": True,
+            "budgetMonthlyCents": AGENT_BUDGET_CENTS,
+            "status": "idle",
+        })
+        req("PATCH", f"/agents/{agent['id']}/instructions-bundle", json={
+            "mode": "managed",
+            "entryFile": "AGENTS.md",
+            "clearLegacyPromptTemplate": True,
+        })
+        print(f"Agent ready: {patched['name']} = codex_local, ${patched.get('budgetMonthlyCents', 0) / 100:.2f}/month")
 
     goal = get_or_create_goal(overlord["id"])
     print(f"Goal: {goal.get('title')} [{goal.get('status')}] {goal.get('id')}")
